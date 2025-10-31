@@ -9,7 +9,8 @@ A TypeScript CLI tool for managing Chrome extensions in the Chrome Web Store usi
 - 📊 **Check status** of extensions and submissions
 - ❌ **Cancel** active submissions
 - 🎯 **Manage deployment** percentage for published extensions
-- 🔧 **Easy configuration** with interactive setup
+- 🔧 **Easy configuration** with interactive setup or environment variables
+- 🔄 **CI/CD ready** with environment variable support
 - 🔍 **Verbose output** and dry-run mode for testing
 
 ## Installation
@@ -19,21 +20,21 @@ A TypeScript CLI tool for managing Chrome extensions in the Chrome Web Store usi
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g cws-cli
+npm install -g cws-manager-cli
 ```
 
 ### Local Installation
 
 ```bash
-npm install cws-cli
-npx cws --help
+npm install cws-manager-cli
+npx cws-manager --help
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/your-username/cws-cli.git
-cd cws-cli
+git clone https://github.com/your-username/cws-manager-cli.git
+cd cws-manager-cli
 npm install
 npm run build
 npm link
@@ -43,22 +44,30 @@ npm link
 
 1. **Configure your credentials:**
    ```bash
-   cws configure
+   cws-manager configure
+   ```
+   
+   *Or set environment variables (see [Configuration](#configuration) for details):*
+   ```bash
+   export CWS_CLIENT_ID="your-client-id"
+   export CWS_CLIENT_SECRET="your-secret"
+   export CWS_REFRESH_TOKEN="your-token"
+   export CWS_PUBLISHER_ID="your-publisher-id"
    ```
 
 2. **Upload an extension:**
    ```bash
-   cws upload <item-id> <file.zip>
+   cws-manager upload <item-id> <file.zip>
    ```
 
 3. **Publish the extension:**
    ```bash
-   cws publish <item-id>
+   cws-manager publish <item-id>
    ```
 
 4. **Check status:**
    ```bash
-   cws status <item-id>
+   cws-manager status <item-id>
    ```
 
 ## Configuration
@@ -108,10 +117,10 @@ npx chrome-webstore-upload-keys
 Run the interactive configuration:
 
 ```bash
-cws configure
+cws-manager configure
 ```
 
-Or create a config file manually at `~/.cws-cli/config.json`:
+Or create a config file manually at `~/.cws-manager-cli/config.json`:
 
 ```json
 {
@@ -122,6 +131,29 @@ Or create a config file manually at `~/.cws-cli/config.json`:
 }
 ```
 
+### Alternative: Environment Variables
+
+As an alternative to config files, you can set configuration using environment variables. This is especially useful for CI/CD environments:
+
+```bash
+export CWS_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+export CWS_CLIENT_SECRET="your-client-secret"
+export CWS_REFRESH_TOKEN="your-refresh-token"
+export CWS_PUBLISHER_ID="your-publisher-id"
+```
+
+**Configuration Priority:**
+1. **Config file** (if it exists) - takes precedence
+2. **Environment variables** (fallback when config file doesn't exist)
+
+**Environment Variables:**
+- `CWS_CLIENT_ID` - Google OAuth2 Client ID
+- `CWS_CLIENT_SECRET` - Google OAuth2 Client Secret  
+- `CWS_REFRESH_TOKEN` - OAuth2 Refresh Token
+- `CWS_PUBLISHER_ID` - Chrome Web Store Publisher ID
+
+> **Note:** All four environment variables must be set for this method to work. If any are missing, you'll need to use the config file or run `cws-manager configure`.
+
 ## Commands
 
 ### `configure`
@@ -129,7 +161,7 @@ Or create a config file manually at `~/.cws-cli/config.json`:
 Set up API credentials interactively.
 
 ```bash
-cws configure [options]
+cws-manager configure [options]
 
 Options:
   -i, --interactive                    Interactive configuration mode (default: true)
@@ -144,7 +176,7 @@ Options:
 Upload a new package to an existing extension.
 
 ```bash
-cws upload <item-id> <file> [options]
+cws-manager upload <item-id> <file> [options]
 
 Arguments:
   item-id                              Chrome Web Store item (extension) ID
@@ -161,16 +193,16 @@ Options:
 **Examples:**
 ```bash
 # Basic upload
-cws upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip
+cws-manager upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip
 
 # Upload and auto-publish with 50% deployment
-cws upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip -a -d 50
+cws-manager upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip -a -d 50
 
 # Upload as staged (requires manual publish later)
-cws upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip -p staged
+cws-manager upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip -p staged
 
 # Upload with custom max wait time (10 minutes)
-cws upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip -w 600
+cws-manager upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip -w 600
 ```
 
 ### `publish`
@@ -178,7 +210,7 @@ cws upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip -w 600
 Publish an extension that has been uploaded.
 
 ```bash
-cws publish <item-id> [options]
+cws-manager publish <item-id> [options]
 
 Arguments:
   item-id                              Chrome Web Store item (extension) ID
@@ -192,13 +224,13 @@ Options:
 **Examples:**
 ```bash
 # Publish with default settings
-cws publish abcdefghijklmnopqrstuvwxyz1234567890
+cws-manager publish abcdefghijklmnopqrstuvwxyz1234567890
 
 # Publish to 25% of users initially  
-cws publish abcdefghijklmnopqrstuvwxyz1234567890 -d 25
+cws-manager publish abcdefghijklmnopqrstuvwxyz1234567890 -d 25
 
 # Stage for later publishing
-cws publish abcdefghijklmnopqrstuvwxyz1234567890 -p staged
+cws-manager publish abcdefghijklmnopqrstuvwxyz1234567890 -p staged
 ```
 
 ### `status`
@@ -206,7 +238,7 @@ cws publish abcdefghijklmnopqrstuvwxyz1234567890 -p staged
 Get the current status of an extension.
 
 ```bash
-cws status <item-id> [options]
+cws-manager status <item-id> [options]
 
 Arguments:
   item-id                              Chrome Web Store item (extension) ID
@@ -219,10 +251,10 @@ Options:
 **Examples:**
 ```bash
 # Check status once
-cws status abcdefghijklmnopqrstuvwxyz1234567890
+cws-manager status abcdefghijklmnopqrstuvwxyz1234567890
 
 # Watch for changes every 60 seconds
-cws status abcdefghijklmnopqrstuvwxyz1234567890 -w -i 60
+cws-manager status abcdefghijklmnopqrstuvwxyz1234567890 -w -i 60
 ```
 
 ### `cancel`
@@ -230,7 +262,7 @@ cws status abcdefghijklmnopqrstuvwxyz1234567890 -w -i 60
 Cancel the current active submission.
 
 ```bash
-cws cancel <item-id>
+cws-manager cancel <item-id>
 
 Arguments:  
   item-id                              Chrome Web Store item (extension) ID
@@ -238,7 +270,7 @@ Arguments:
 
 **Example:**
 ```bash
-cws cancel abcdefghijklmnopqrstuvwxyz1234567890
+cws-manager cancel abcdefghijklmnopqrstuvwxyz1234567890
 ```
 
 ### `deploy`
@@ -246,7 +278,7 @@ cws cancel abcdefghijklmnopqrstuvwxyz1234567890
 Update the deployment percentage for a published extension.
 
 ```bash
-cws deploy <item-id> <percentage>
+cws-manager deploy <item-id> <percentage>
 
 Arguments:
   item-id                              Chrome Web Store item (extension) ID
@@ -256,27 +288,27 @@ Arguments:
 **Example:**
 ```bash
 # Deploy to 75% of users
-cws deploy abcdefghijklmnopqrstuvwxyz1234567890 75
+cws-manager deploy abcdefghijklmnopqrstuvwxyz1234567890 75
 ```
 
 ## Global Options
 
 All commands support these global options:
 
-- `-c, --config <path>`: Path to config file (default: `~/.cws-cli/config.json`)
+- `-c, --config <path>`: Path to config file (default: `~/.cws-manager-cli/config.json`)
 - `-v, --verbose`: Enable verbose output
 - `--dry`: Dry run mode (don't actually make API calls)
 
 **Examples:**
 ```bash
 # Use custom config file
-cws -c ./my-config.json status abcdefghijklmnopqrstuvwxyz1234567890
+cws-manager -c ./my-config.json status abcdefghijklmnopqrstuvwxyz1234567890
 
 # Verbose output  
-cws -v upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip
+cws-manager -v upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip
 
 # Test commands without making API calls
-cws --dry publish abcdefghijklmnopqrstuvwxyz1234567890
+cws-manager --dry publish abcdefghijklmnopqrstuvwxyz1234567890
 ```
 
 ## CI/CD Integration
@@ -304,27 +336,27 @@ jobs:
           node-version: '18'
           
       - name: Install CLI
-        run: npm install -g cws-cli
+        run: npm install -g cws-manager-cli
         
       - name: Create config
         run: |
-          mkdir -p ~/.cws-cli
+          mkdir -p ~/.cws-manager-cli
           echo '{}' | jq \\
             --arg clientId "$CLIENT_ID" \\
             --arg clientSecret "$CLIENT_SECRET" \\
             --arg refreshToken "$REFRESH_TOKEN" \\
             --arg publisherId "$PUBLISHER_ID" \\
             '{clientId: $clientId, clientSecret: $clientSecret, refreshToken: $refreshToken, publisherId: $publisherId}' \\
-            > ~/.cws-cli/config.json
+            > ~/.cws-manager-cli/config.json
         env:
-          CLIENT_ID: ${{ secrets.CHROME_WS_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CHROME_WS_CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.CHROME_WS_REFRESH_TOKEN }}
-          PUBLISHER_ID: ${{ secrets.CHROME_WS_PUBLISHER_ID }}
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
           
       - name: Upload and publish
         run: |
-          cws upload ${{ secrets.EXTENSION_ID }} extension.zip --auto-publish
+          cws-manager upload ${{ secrets.EXTENSION_ID }} extension.zip --auto-publish
 ```
 
 ### Jenkins Example
@@ -344,15 +376,15 @@ pipeline {
     stages {
         stage('Install CLI') {
             steps {
-                sh 'npm install -g cws-cli'
+                sh 'npm install -g cws-manager-cli'
             }
         }
         
         stage('Configure') {
             steps {
                 sh '''
-                    mkdir -p ~/.cws-cli
-                    cat > ~/.cws-cli/config.json << EOF
+                    mkdir -p ~/.cws-manager-cli
+                    cat > ~/.cws-manager-cli/config.json << EOF
 {
   "clientId": "${CWS_CLIENT_ID}",
   "clientSecret": "${CWS_CLIENT_SECRET}",
@@ -366,7 +398,7 @@ EOF
         
         stage('Deploy') {
             steps {
-                sh 'cws upload ${EXTENSION_ID} extension.zip --auto-publish'
+                sh 'cws-manager upload ${EXTENSION_ID} extension.zip --auto-publish'
             }
         }
     }
@@ -388,7 +420,7 @@ The CLI is built on top of the Chrome Web Store API v2. Here are the main API en
 ### Common Issues
 
 1. **"Config file not found"**
-   - Run `cws configure` to create the config file
+   - Run `cws-manager configure` to create the config file
    - Or specify a config path with `-c <path>`
 
 2. **"Failed to obtain access token"**  
@@ -411,13 +443,82 @@ The CLI is built on top of the Chrome Web Store API v2. Here are the main API en
 Use verbose mode to see detailed API requests and responses:
 
 ```bash
-cws -v status your-extension-id
+cws-manager -v status your-extension-id
 ```
 
 Use dry run mode to test commands without making actual API calls:
 
 ```bash  
-cws --dry upload your-extension-id extension.zip
+cws-manager --dry upload your-extension-id extension.zip
+```
+
+## CI/CD Integration
+
+The environment variables configuration makes CWS CLI perfect for automated deployments:
+
+### GitHub Actions Example
+
+```yaml
+name: Deploy Extension
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install CWS CLI
+        run: npm install -g cws-manager-cli
+        
+      - name: Upload & Publish Extension
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+        run: |
+          cws-manager upload ${{ secrets.EXTENSION_ID }} extension.zip --auto-publish
+```
+
+### Docker Example
+
+```dockerfile
+FROM node:18-alpine
+RUN npm install -g cws-manager-cli
+
+ENV CWS_CLIENT_ID=""
+ENV CWS_CLIENT_SECRET=""
+ENV CWS_REFRESH_TOKEN=""
+ENV CWS_PUBLISHER_ID=""
+
+COPY extension.zip .
+CMD ["cws", "upload", "${EXTENSION_ID}", "extension.zip", "--auto-publish"]
+```
+
+### Shell Script Example
+
+```bash
+#!/bin/bash
+# deploy-extension.sh
+
+# Check if environment variables are set
+if [[ -z "$CWS_CLIENT_ID" || -z "$CWS_CLIENT_SECRET" || -z "$CWS_REFRESH_TOKEN" || -z "$CWS_PUBLISHER_ID" ]]; then
+  echo "Error: All CWS environment variables must be set"
+  exit 1
+fi
+
+# Upload and publish extension
+cws-manager upload "$EXTENSION_ID" extension.zip --auto-publish --deploy-percentage 25
+
+echo "Extension deployed with 25% rollout"
 ```
 
 ## Contributing
@@ -433,8 +534,8 @@ cws --dry upload your-extension-id extension.zip
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/cws-cli.git
-cd cws-cli
+git clone https://github.com/your-username/cws-manager-cli.git
+cd cws-manager-cli
 
 # Install dependencies  
 npm install

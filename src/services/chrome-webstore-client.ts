@@ -21,7 +21,7 @@ export class ChromeWebStoreClient {
   private static readonly BASE_URL = "https://chromewebstore.googleapis.com";
   private static readonly TOKEN_URL = "https://oauth2.googleapis.com/token";
   private static readonly POLL_INTERVAL_MS = 2000;
-  private static readonly USER_AGENT = "cws-cli/1.0.0";
+  private static readonly USER_AGENT = "cws-manager-cli/1.0.0";
 
   private config: ChromeWebStoreConfig;
   private baseUrl = ChromeWebStoreClient.BASE_URL;

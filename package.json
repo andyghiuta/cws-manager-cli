@@ -1,10 +1,10 @@
 {
-  "name": "cws-cli",
+  "name": "cws-manager-cli",
   "version": "1.0.0",
   "description": "CLI tool for managing Chrome extensions in the Chrome Web Store",
   "main": "dist/index.js",
   "bin": {
-    "cws": "dist/cli.js"
+    "cws-manager": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

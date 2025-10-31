@@ -15,7 +15,7 @@ import { deployCommand } from "./commands/deploy";
 const program = new Command();
 
 program
-  .name("cws")
+  .name("cws-manager")
   .description(
     "CLI tool for managing Chrome extensions in the Chrome Web Store"
   )

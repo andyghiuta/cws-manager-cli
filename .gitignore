@@ -94,4 +94,4 @@ test-extensions/
 
 # Configuration files (contains sensitive data)
 config.json
-.cws-cli/
+.cws-manager-cli/

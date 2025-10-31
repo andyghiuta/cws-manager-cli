@@ -107,7 +107,7 @@ export const configureCommand = new Command("configure")
 
       Logger.green("✅ Configuration saved successfully!");
       Logger.verbose(
-        `Config saved to: ${options.config || "~/.cws-cli/config.json"}`
+        `Config saved to: ${options.config || "~/.cws-manager-cli/config.json"}`
       );
     } catch (error) {
       Logger.red(
