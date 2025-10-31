@@ -5,6 +5,21 @@ import { DeployPercentageOptions } from "../types";
 import { withSpinner } from "../utils/spinner";
 import { Logger } from "../utils/logger";
 
+// Helper function to validate deploy percentage
+function validatePercentage(percentage: string): number {
+  const deployPercentage = parseInt(percentage, 10);
+
+  if (
+    isNaN(deployPercentage) ||
+    deployPercentage < 0 ||
+    deployPercentage > 100
+  ) {
+    throw new Error("Deploy percentage must be a number between 0 and 100");
+  }
+
+  return deployPercentage;
+}
+
 export const deployCommand = new Command("deploy")
   .description("Set the deployment percentage for a published item")
   .argument("<item-id>", "Chrome Web Store item (extension) ID")
@@ -17,26 +32,18 @@ export const deployCommand = new Command("deploy")
       command: Command
     ) => {
       const globalOptions = command.parent?.opts() || {};
+      const deployPercentage = validatePercentage(percentage);
+
       const opts: DeployPercentageOptions = {
         ...globalOptions,
         itemId,
-        percentage: parseInt(percentage, 10),
+        percentage: deployPercentage,
       };
 
       try {
         Logger.blue("🎯 Chrome Web Store Deploy Percentage");
         Logger.verbose(`Item ID: ${itemId}`);
         Logger.verbose(`Deploy Percentage: ${opts.percentage}%`);
-
-        if (
-          isNaN(opts.percentage) ||
-          opts.percentage < 0 ||
-          opts.percentage > 100
-        ) {
-          throw new Error(
-            "Deploy percentage must be a number between 0 and 100"
-          );
-        }
 
         if (opts.dry) {
           Logger.yellow(
