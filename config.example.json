@@ -1,0 +1,6 @@
+{
+  "clientId": "your-google-client-id.apps.googleusercontent.com",
+  "clientSecret": "your-client-secret",
+  "refreshToken": "your-refresh-token",
+  "publisherId": "your-publisher-id"
+}
