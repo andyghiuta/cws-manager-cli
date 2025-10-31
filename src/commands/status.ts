@@ -9,6 +9,7 @@ import {
   StatusCommandOptions,
 } from "../types";
 import { withSpinnerCustom } from "../utils/spinner";
+import { Logger } from "../utils/logger";
 
 export const statusCommand = new Command("status")
   .description("Get the status of an item in the Chrome Web Store")
@@ -29,10 +30,9 @@ export const statusCommand = new Command("status")
       };
 
       try {
-        console.log(chalk.blue("📊 Chrome Web Store Status"));
-        console.log(chalk.gray(`Item ID: ${itemId}\n`));
-
-        // Load configuration
+        Logger.setVerbose(opts.verbose || false);
+        Logger.blue("📊 Chrome Web Store Status");
+        Logger.gray(`Item ID: ${itemId}\n`); // Load configuration
         const config = await ConfigManager.loadConfig(opts.config);
         const client = new ChromeWebStoreClient(config);
 
@@ -45,29 +45,25 @@ export const statusCommand = new Command("status")
                 spinner.stop();
 
                 // Display status information
-                console.log(chalk.green("📋 Status Information:"));
+                Logger.blue("📋 Status Information:");
 
                 if (response.itemId) {
-                  console.log(chalk.gray(`  Item ID: ${response.itemId}`));
+                  Logger.verbose(`  Item ID: ${response.itemId}`);
                 }
 
                 if (response.publicKey) {
-                  console.log(
-                    chalk.gray(
-                      `  Public Key: ${response.publicKey.substring(0, 20)}...`
-                    )
+                  Logger.verbose(
+                    `  Public Key: ${response.publicKey.substring(0, 20)}...`
                   );
                 }
 
                 // Published status
                 if (response.publishedItemRevisionStatus) {
-                  console.log(chalk.green("\n📦 Published Version:"));
+                  Logger.green("\n📦 Published Version:");
                   console.log(
-                    chalk.gray(
-                      `  State: ${getStateColor(
-                        response.publishedItemRevisionStatus.state
-                      )}`
-                    )
+                    `  State: ${getStateColor(
+                      response.publishedItemRevisionStatus.state
+                    )}`
                   );
 
                   if (
@@ -75,17 +71,13 @@ export const statusCommand = new Command("status")
                   ) {
                     response.publishedItemRevisionStatus.distributionChannels.forEach(
                       (channel, index) => {
-                        console.log(chalk.gray(`  Channel ${index + 1}:`));
+                        Logger.verbose(`  Channel ${index + 1}:`);
                         if (channel.crxVersion) {
-                          console.log(
-                            chalk.gray(`    Version: ${channel.crxVersion}`)
-                          );
+                          Logger.verbose(`    Version: ${channel.crxVersion}`);
                         }
                         if (channel.deployPercentage !== undefined) {
-                          console.log(
-                            chalk.gray(
-                              `    Deploy %: ${channel.deployPercentage}%`
-                            )
+                          Logger.verbose(
+                            `    Deploy %: ${channel.deployPercentage}%`
                           );
                         }
                       }
@@ -95,13 +87,11 @@ export const statusCommand = new Command("status")
 
                 // Submitted status
                 if (response.submittedItemRevisionStatus) {
-                  console.log(chalk.yellow("\n🔄 Submitted Version:"));
+                  Logger.yellow("\n🔄 Submitted Version:");
                   console.log(
-                    chalk.gray(
-                      `  State: ${getStateColor(
-                        response.submittedItemRevisionStatus.state
-                      )}`
-                    )
+                    `  State: ${getStateColor(
+                      response.submittedItemRevisionStatus.state
+                    )}`
                   );
 
                   if (
@@ -109,17 +99,13 @@ export const statusCommand = new Command("status")
                   ) {
                     response.submittedItemRevisionStatus.distributionChannels.forEach(
                       (channel, index) => {
-                        console.log(chalk.gray(`  Channel ${index + 1}:`));
+                        Logger.verbose(`  Channel ${index + 1}:`);
                         if (channel.crxVersion) {
-                          console.log(
-                            chalk.gray(`    Version: ${channel.crxVersion}`)
-                          );
+                          Logger.verbose(`    Version: ${channel.crxVersion}`);
                         }
                         if (channel.deployPercentage !== undefined) {
-                          console.log(
-                            chalk.gray(
-                              `    Deploy %: ${channel.deployPercentage}%`
-                            )
+                          Logger.verbose(
+                            `    Deploy %: ${channel.deployPercentage}%`
                           );
                         }
                       }
@@ -129,36 +115,30 @@ export const statusCommand = new Command("status")
 
                 // Upload status
                 if (response.lastAsyncUploadState) {
-                  console.log(chalk.blue("\n📤 Last Upload:"));
+                  Logger.blue("\n📤 Last Upload:");
                   console.log(
-                    chalk.gray(
-                      `  State: ${getUploadStateColor(
-                        response.lastAsyncUploadState
-                      )}`
-                    )
+                    `  State: ${getUploadStateColor(
+                      response.lastAsyncUploadState
+                    )}`
                   );
                 }
 
                 // Warnings and takedowns
                 if (response.warned) {
-                  console.log(
-                    chalk.yellow(
-                      "\n⚠️  Warning: Item has policy violation warnings"
-                    )
+                  Logger.yellow(
+                    "\n⚠️  Warning: Item has policy violation warnings"
                   );
                 }
 
                 if (response.takenDown) {
-                  console.log(
-                    chalk.red(
-                      "\n❌ Item has been taken down for policy violations"
-                    )
+                  Logger.red(
+                    "\n❌ Item has been taken down for policy violations"
                   );
                 }
 
                 if (opts.verbose) {
-                  console.log(
-                    chalk.gray("\nRaw response:"),
+                  Logger.verbose(
+                    "\nRaw response:",
                     JSON.stringify(response, null, 2)
                   );
                 }
@@ -183,33 +163,29 @@ export const statusCommand = new Command("status")
             throw new Error("Interval must be at least 5 seconds");
           }
 
-          console.log(
-            chalk.blue(
-              `\n👁️  Watching for changes (polling every ${interval} seconds)...`
-            )
+          Logger.blue(
+            `\n👁️  Watching for changes (polling every ${interval} seconds)...`
           );
-          console.log(chalk.gray("Press Ctrl+C to stop watching\n"));
+          Logger.verbose("Press Ctrl+C to stop watching\n");
 
           setInterval(async () => {
             try {
-              console.log(
-                chalk.gray(
-                  `[${new Date().toLocaleTimeString()}] Checking status...`
-                )
+              Logger.verbose(
+                `[${new Date().toLocaleTimeString()}] Checking status...`
               );
               await fetchStatus();
               console.log("");
             } catch (error) {
-              console.error(
-                chalk.red("Status check failed:"),
+              Logger.red(
+                "Status check failed:",
                 error instanceof Error ? error.message : error
               );
             }
           }, interval * 1000);
         }
       } catch (error) {
-        console.error(
-          chalk.red("❌ Status check failed:"),
+        Logger.red(
+          "❌ Status check failed:",
           error instanceof Error ? error.message : error
         );
         process.exit(1);

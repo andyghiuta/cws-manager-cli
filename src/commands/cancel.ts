@@ -1,9 +1,9 @@
 import { Command } from "commander";
-import chalk from "chalk";
 import { ConfigManager } from "../utils/config";
 import { ChromeWebStoreClient } from "../services/chrome-webstore-client";
 import { CommandOptions } from "../types";
 import { withSpinner } from "../utils/spinner";
+import { Logger } from "../utils/logger";
 
 export const cancelCommand = new Command("cancel")
   .description("Cancel the current submission of an item")
@@ -13,14 +13,13 @@ export const cancelCommand = new Command("cancel")
     const opts: CommandOptions = { ...globalOptions, itemId };
 
     try {
-      console.log(chalk.blue("❌ Chrome Web Store Cancel Submission"));
-      console.log(chalk.gray(`Item ID: ${itemId}`));
+      Logger.setVerbose(opts.verbose || false);
+      Logger.blue("❌ Chrome Web Store Cancel Submission");
+      Logger.gray(`Item ID: ${itemId}`);
 
       if (opts.dry) {
-        console.log(
-          chalk.yellow(
-            "🏃 Dry run mode - no actual cancellation will be performed"
-          )
+        Logger.yellow(
+          "🏃 Dry run mode - no actual cancellation will be performed"
         );
         return;
       }
@@ -36,15 +35,13 @@ export const cancelCommand = new Command("cancel")
         () => client.cancelSubmission(itemId)
       );
 
-      console.log(chalk.green("✅ Submission cancelled!"));
-      console.log(
-        chalk.gray(
-          "The current active submission has been cancelled and is no longer in review."
-        )
+      Logger.green("✅ Submission cancelled!");
+      Logger.gray(
+        "The current active submission has been cancelled and is no longer in review."
       );
     } catch (error) {
-      console.error(
-        chalk.red("❌ Cancellation failed:"),
+      Logger.red(
+        "❌ Cancellation failed:",
         error instanceof Error ? error.message : error
       );
       process.exit(1);

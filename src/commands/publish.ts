@@ -1,9 +1,9 @@
 import { Command } from "commander";
-import chalk from "chalk";
 import { ConfigManager } from "../utils/config";
 import { ChromeWebStoreClient } from "../services/chrome-webstore-client";
 import { PublishOptions, PublishType, PublishCommandOptions } from "../types";
 import { withSpinner } from "../utils/spinner";
+import { Logger } from "../utils/logger";
 
 export const publishCommand = new Command("publish")
   .description("Publish an item in the Chrome Web Store")
@@ -29,14 +29,13 @@ export const publishCommand = new Command("publish")
       const opts: PublishOptions = { ...globalOptions, itemId, ...options };
 
       try {
-        console.log(chalk.blue("🚀 Chrome Web Store Publish"));
-        console.log(chalk.gray(`Item ID: ${itemId}`));
+        Logger.setVerbose(opts.verbose || false);
+        Logger.blue("🚀 Chrome Web Store Publish");
+        Logger.verbose(`Item ID: ${itemId}`);
 
         if (opts.dry) {
-          console.log(
-            chalk.yellow(
-              "🏃 Dry run mode - no actual publish will be performed"
-            )
+          Logger.yellow(
+            "🏃 Dry run mode - no actual publish will be performed"
           );
           return;
         }
@@ -74,19 +73,17 @@ export const publishCommand = new Command("publish")
             })
         );
 
-        if (opts.verbose) {
-          console.log(chalk.gray("Publish response:"), response);
-        }
+        Logger.verbose("Publish response:", response);
 
-        console.log(chalk.green("✅ Publish completed!"));
-        console.log(chalk.gray(`Status: ${response.state}`));
+        Logger.green("✅ Publish completed!");
+        Logger.gray(`Status: ${response.state}`);
 
         if (response.itemId) {
-          console.log(chalk.gray(`Item ID: ${response.itemId}`));
+          Logger.gray(`Item ID: ${response.itemId}`);
         }
       } catch (error) {
-        console.error(
-          chalk.red("❌ Publish failed:"),
+        Logger.red(
+          "❌ Publish failed:",
           error instanceof Error ? error.message : error
         );
         process.exit(1);

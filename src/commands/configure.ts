@@ -1,8 +1,8 @@
 import { Command } from "commander";
 import inquirer from "inquirer";
-import chalk from "chalk";
 import { ConfigManager } from "../utils/config";
 import { ChromeWebStoreConfig, ConfigureCommandOptions } from "../types";
+import { Logger } from "../utils/logger";
 
 export const configureCommand = new Command("configure")
   .description("Configure Chrome Web Store API credentials")
@@ -22,18 +22,18 @@ export const configureCommand = new Command("configure")
         !options.refreshToken ||
         !options.publisherId
       ) {
-        console.log(chalk.blue("🔧 CWS CLI Configuration"));
-        console.log(
-          chalk.gray("Please provide your Chrome Web Store API credentials.\n")
+        Logger.blue("🔧 CWS CLI Configuration");
+        Logger.verbose(
+          "Please provide your Chrome Web Store API credentials.\n"
         );
 
-        console.log(chalk.yellow("💡 How to get these credentials:"));
-        console.log(
+        Logger.yellow("💡 How to get these credentials:");
+        Logger.verbose(
           "1. Go to the Google Cloud Console (https://console.cloud.google.com)"
         );
-        console.log("2. Enable the Chrome Web Store API");
-        console.log("3. Create OAuth2 credentials");
-        console.log(
+        Logger.verbose("2. Enable the Chrome Web Store API");
+        Logger.verbose("3. Create OAuth2 credentials");
+        Logger.verbose(
           "4. Get your Publisher ID from the Chrome Web Store Developer Dashboard\n"
         );
 
@@ -87,15 +87,13 @@ export const configureCommand = new Command("configure")
 
       await ConfigManager.saveConfig(config, options.config);
 
-      console.log(chalk.green("✅ Configuration saved successfully!"));
-      console.log(
-        chalk.gray(
-          `Config saved to: ${options.config || "~/.cws-cli/config.json"}`
-        )
+      Logger.green("✅ Configuration saved successfully!");
+      Logger.verbose(
+        `Config saved to: ${options.config || "~/.cws-cli/config.json"}`
       );
     } catch (error) {
-      console.error(
-        chalk.red("❌ Configuration failed:"),
+      Logger.red(
+        "❌ Configuration failed:",
         error instanceof Error ? error.message : error
       );
       process.exit(1);

@@ -1,5 +1,4 @@
 import { Command } from "commander";
-import chalk from "chalk";
 import { existsSync, statSync } from "fs";
 import { extname } from "path";
 import { ConfigManager } from "../utils/config";
@@ -12,6 +11,7 @@ import {
 } from "../types";
 import { formatFileSize } from "../utils/utils";
 import { withSpinner, withSpinnerCustom } from "../utils/spinner";
+import { Logger } from "../utils/logger";
 
 export const uploadCommand = new Command("upload")
   .description("Upload a package to Chrome Web Store")
@@ -64,16 +64,13 @@ export const uploadCommand = new Command("upload")
           );
         }
 
-        console.log(chalk.blue("📦 Chrome Web Store Upload"));
-        console.log(chalk.gray(`Item ID: ${itemId}`));
-        console.log(
-          chalk.gray(`File: ${file} (${formatFileSize(fileStats.size)})`)
-        );
+        Logger.setVerbose(opts.verbose || false);
+        Logger.blue("📦 Chrome Web Store Upload");
+        Logger.gray(`Item ID: ${itemId}`);
+        Logger.gray(`File: ${file} (${formatFileSize(fileStats.size)})`);
 
         if (opts.dry) {
-          console.log(
-            chalk.yellow("🏃 Dry run mode - no actual upload will be performed")
-          );
+          Logger.yellow("🏃 Dry run mode - no actual upload will be performed");
           return;
         }
 
@@ -89,9 +86,7 @@ export const uploadCommand = new Command("upload")
           () => client.uploadPackage(itemId, file)
         );
 
-        if (opts.verbose) {
-          console.log(chalk.gray("Upload response:"), uploadResponse);
-        }
+        Logger.verbose("Upload response:", uploadResponse);
 
         // Wait for upload processing if needed
         if (uploadResponse.uploadState === UploadState.IN_PROGRESS) {
@@ -128,17 +123,15 @@ export const uploadCommand = new Command("upload")
           );
         }
 
-        console.log(chalk.green("✅ Upload completed successfully!"));
+        Logger.green("✅ Upload completed successfully!");
 
         if (uploadResponse.crxVersion) {
-          console.log(
-            chalk.gray(`Package version: ${uploadResponse.crxVersion}`)
-          );
+          Logger.gray(`Package version: ${uploadResponse.crxVersion}`);
         }
 
         // Auto-publish if requested
         if (opts.autoPublish) {
-          console.log(chalk.blue("\n🚀 Auto-publishing..."));
+          Logger.blue("\n🚀 Auto-publishing...");
 
           const publishType =
             opts.publishType === "staged"
@@ -169,16 +162,14 @@ export const uploadCommand = new Command("upload")
               })
           );
 
-          if (opts.verbose) {
-            console.log(chalk.gray("Publish response:"), publishResponse);
-          }
+          Logger.verbose("Publish response:", publishResponse);
 
-          console.log(chalk.green("✅ Auto-publish completed!"));
-          console.log(chalk.gray(`Status: ${publishResponse.state}`));
+          Logger.green("✅ Auto-publish completed!");
+          Logger.gray(`Status: ${publishResponse.state}`);
         }
       } catch (error) {
-        console.error(
-          chalk.red("❌ Upload failed:"),
+        Logger.red(
+          "❌ Upload failed:",
           error instanceof Error ? error.message : error
         );
         process.exit(1);

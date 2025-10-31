@@ -1,9 +1,9 @@
 import { Command } from "commander";
-import chalk from "chalk";
 import { ConfigManager } from "../utils/config";
 import { ChromeWebStoreClient } from "../services/chrome-webstore-client";
 import { DeployPercentageOptions } from "../types";
 import { withSpinner } from "../utils/spinner";
+import { Logger } from "../utils/logger";
 
 export const deployCommand = new Command("deploy")
   .description("Set the deployment percentage for a published item")
@@ -24,9 +24,9 @@ export const deployCommand = new Command("deploy")
       };
 
       try {
-        console.log(chalk.blue("🎯 Chrome Web Store Deploy Percentage"));
-        console.log(chalk.gray(`Item ID: ${itemId}`));
-        console.log(chalk.gray(`Deploy Percentage: ${opts.percentage}%`));
+        Logger.blue("🎯 Chrome Web Store Deploy Percentage");
+        Logger.verbose(`Item ID: ${itemId}`);
+        Logger.verbose(`Deploy Percentage: ${opts.percentage}%`);
 
         if (
           isNaN(opts.percentage) ||
@@ -39,10 +39,8 @@ export const deployCommand = new Command("deploy")
         }
 
         if (opts.dry) {
-          console.log(
-            chalk.yellow(
-              "🏃 Dry run mode - no actual deployment change will be performed"
-            )
+          Logger.yellow(
+            "🏃 Dry run mode - no actual deployment change will be performed"
           );
           return;
         }
@@ -61,23 +59,17 @@ export const deployCommand = new Command("deploy")
             })
         );
 
-        console.log(chalk.green("✅ Deploy percentage updated!"));
-        console.log(
-          chalk.gray(
-            `The published revision will now be deployed to ${opts.percentage}% of users.`
-          )
+        Logger.green("✅ Deploy percentage updated!");
+        Logger.verbose(
+          `Visit https://chrome.google.com/webstore/devconsole to manage your rollout`
         );
 
         if (opts.verbose) {
-          console.log(
-            chalk.gray(
-              "Note: Changes may take some time to propagate to all users."
-            )
-          );
+          Logger.verbose(`Deploy percentage set to ${opts.percentage}%`);
         }
       } catch (error) {
-        console.error(
-          chalk.red("❌ Deploy percentage update failed:"),
+        Logger.red(
+          "❌ Deploy percentage update failed:",
           error instanceof Error ? error.message : error
         );
         process.exit(1);
