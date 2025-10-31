@@ -1,11 +1,17 @@
 import { Command } from "commander";
 import chalk from "chalk";
-import ora from "ora";
 import { existsSync, statSync } from "fs";
 import { extname } from "path";
-import { ConfigManager, formatFileSize } from "../utils/config";
+import { ConfigManager } from "../utils/config";
 import { ChromeWebStoreClient } from "../services/chrome-webstore-client";
-import { UploadOptions, PublishType, UploadState } from "../types";
+import {
+  UploadOptions,
+  PublishType,
+  UploadState,
+  UploadCommandOptions,
+} from "../types";
+import { formatFileSize } from "../utils/utils";
+import { withSpinner, withSpinnerCustom } from "../utils/spinner";
 
 export const uploadCommand = new Command("upload")
   .description("Upload a package to Chrome Web Store")
@@ -29,7 +35,12 @@ export const uploadCommand = new Command("upload")
     "300"
   )
   .action(
-    async (itemId: string, file: string, options: any, command: Command) => {
+    async (
+      itemId: string,
+      file: string,
+      options: UploadCommandOptions,
+      command: Command
+    ) => {
       const globalOptions = command.parent?.opts() || {};
       const opts: UploadOptions = {
         ...globalOptions,
@@ -71,100 +82,99 @@ export const uploadCommand = new Command("upload")
         const client = new ChromeWebStoreClient(config);
 
         // Upload the package
-        const uploadSpinner = ora("Uploading package...").start();
+        const uploadResponse = await withSpinner(
+          "Uploading package...",
+          "Package uploaded successfully",
+          "Upload failed",
+          () => client.uploadPackage(itemId, file)
+        );
 
-        try {
-          const uploadResponse = await client.uploadPackage(itemId, file);
-          uploadSpinner.succeed("Package uploaded successfully");
+        if (opts.verbose) {
+          console.log(chalk.gray("Upload response:"), uploadResponse);
+        }
+
+        // Wait for upload processing if needed
+        if (uploadResponse.uploadState === UploadState.IN_PROGRESS) {
+          const maxWaitTime = parseInt(opts.maxWaitTime || "300", 10) * 1000; // Convert to milliseconds
+
+          if (isNaN(maxWaitTime) || maxWaitTime < 5000) {
+            throw new Error("Max wait time must be at least 5 seconds");
+          }
+
+          await withSpinnerCustom(
+            `Processing upload... (max wait: ${Math.round(
+              maxWaitTime / 1000
+            )}s)`,
+            async (spinner) => {
+              try {
+                const state = await client.waitForUploadCompletion(
+                  itemId,
+                  maxWaitTime
+                );
+
+                if (state === UploadState.SUCCEEDED) {
+                  spinner.succeed("Upload processing completed");
+                } else {
+                  spinner.fail(`Upload processing failed: ${state}`);
+                  process.exit(1);
+                }
+
+                return state;
+              } catch (error) {
+                spinner.fail("Upload processing timed out or failed");
+                throw error;
+              }
+            }
+          );
+        }
+
+        console.log(chalk.green("✅ Upload completed successfully!"));
+
+        if (uploadResponse.crxVersion) {
+          console.log(
+            chalk.gray(`Package version: ${uploadResponse.crxVersion}`)
+          );
+        }
+
+        // Auto-publish if requested
+        if (opts.autoPublish) {
+          console.log(chalk.blue("\n🚀 Auto-publishing..."));
+
+          const publishType =
+            opts.publishType === "staged"
+              ? PublishType.STAGED_PUBLISH
+              : PublishType.DEFAULT_PUBLISH;
+          const deployPercentage = parseInt(opts.deployPercentage || "100", 10);
+
+          if (
+            isNaN(deployPercentage) ||
+            deployPercentage < 0 ||
+            deployPercentage > 100
+          ) {
+            throw new Error(
+              "Deploy percentage must be a number between 0 and 100"
+            );
+          }
+
+          const publishResponse = await withSpinner(
+            "Publishing item...",
+            "Item published successfully",
+            "Publish failed",
+            () =>
+              client.publishItem(itemId, {
+                skipReview: opts.skipReview,
+                publishType,
+                deployInfos:
+                  deployPercentage < 100 ? [{ deployPercentage }] : undefined,
+              })
+          );
 
           if (opts.verbose) {
-            console.log(chalk.gray("Upload response:"), uploadResponse);
+            console.log(chalk.gray("Publish response:"), publishResponse);
           }
 
-          // Wait for upload processing if needed
-          if (uploadResponse.uploadState === UploadState.IN_PROGRESS) {
-            const maxWaitTime = parseInt(opts.maxWaitTime || "300", 10) * 1000; // Convert to milliseconds
-
-            if (isNaN(maxWaitTime) || maxWaitTime < 5000) {
-              throw new Error("Max wait time must be at least 5 seconds");
-            }
-
-            const waitSpinner = ora(
-              `Processing upload... (max wait: ${Math.round(
-                maxWaitTime / 1000
-              )}s)`
-            ).start();
-
-            try {
-              const finalState = await client.waitForUploadCompletion(
-                itemId,
-                maxWaitTime
-              );
-
-              if (finalState === UploadState.SUCCEEDED) {
-                waitSpinner.succeed("Upload processing completed");
-              } else {
-                waitSpinner.fail(`Upload processing failed: ${finalState}`);
-                process.exit(1);
-              }
-            } catch (error) {
-              waitSpinner.fail("Upload processing timed out or failed");
-              throw error;
-            }
-          }
-
-          console.log(chalk.green("✅ Upload completed successfully!"));
-
-          if (uploadResponse.crxVersion) {
-            console.log(
-              chalk.gray(`Package version: ${uploadResponse.crxVersion}`)
-            );
-          }
-
-          // Auto-publish if requested
-          if (opts.autoPublish) {
-            console.log(chalk.blue("\n🚀 Auto-publishing..."));
-
-            const publishType =
-              opts.publishType === "staged"
-                ? PublishType.STAGED_PUBLISH
-                : PublishType.DEFAULT_PUBLISH;
-            const deployPercentage = parseInt(
-              opts.deployPercentage || "100",
-              10
-            );
-
-            if (
-              isNaN(deployPercentage) ||
-              deployPercentage < 0 ||
-              deployPercentage > 100
-            ) {
-              throw new Error(
-                "Deploy percentage must be a number between 0 and 100"
-              );
-            }
-
-            const publishSpinner = ora("Publishing item...").start();
-
-            const publishResponse = await client.publishItem(itemId, {
-              skipReview: opts.skipReview,
-              publishType,
-              deployInfos:
-                deployPercentage < 100 ? [{ deployPercentage }] : undefined,
-            });
-
-            publishSpinner.succeed("Item published successfully");
-
-            if (opts.verbose) {
-              console.log(chalk.gray("Publish response:"), publishResponse);
-            }
-
-            console.log(chalk.green("✅ Auto-publish completed!"));
-            console.log(chalk.gray(`Status: ${publishResponse.state}`));
-          }
-        } catch (error) {
-          uploadSpinner.fail("Upload failed");
-          throw error;
+          console.log(chalk.green("✅ Auto-publish completed!"));
+          console.log(chalk.gray(`Status: ${publishResponse.state}`));
         }
       } catch (error) {
         console.error(

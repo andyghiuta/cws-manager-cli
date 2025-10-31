@@ -105,3 +105,34 @@ export interface PublishOptions extends CommandOptions {
 export interface DeployPercentageOptions extends CommandOptions {
   percentage: number;
 }
+
+// Raw option types from Commander.js before processing
+export interface PublishCommandOptions {
+  skipReview?: boolean;
+  publishType?: string;
+  deployPercentage?: string;
+}
+
+export interface UploadCommandOptions {
+  skipReview?: boolean;
+  publishType?: string;
+  deployPercentage?: string;
+  autoPublish?: boolean;
+  maxWaitTime?: string;
+}
+
+export interface StatusCommandOptions {
+  watch?: boolean;
+  interval?: string;
+}
+
+export interface ConfigureCommandOptions {
+  interactive?: boolean;
+  clientId?: string;
+  clientSecret?: string;
+  refreshToken?: string;
+  publisherId?: string;
+  config?: string; // Global option available to all commands
+}
+
+// Cancel and Deploy commands don't have specific options beyond global ones

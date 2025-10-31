@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, dirname, extname } from "path";
+import { join, dirname } from "path";
 import { homedir } from "os";
 import { ChromeWebStoreConfig } from "../types";
 
@@ -77,28 +77,4 @@ export class ConfigManager {
       publisherId: "your-publisher-id",
     };
   }
-}
-
-export function getMimeType(filePath: string): string {
-  const ext = extname(filePath).toLowerCase();
-  switch (ext) {
-    case ".zip":
-      return "application/zip";
-    case ".crx":
-      return "application/x-chrome-extension";
-    default:
-      return "application/octet-stream";
-  }
-}
-
-export function formatFileSize(bytes: number): string {
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  if (bytes === 0) return "0 Bytes";
-
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
-}
-
-export function delay(ms: number): Promise<void> {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }

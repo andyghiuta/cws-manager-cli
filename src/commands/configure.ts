@@ -2,7 +2,7 @@ import { Command } from "commander";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { ConfigManager } from "../utils/config";
-import { ChromeWebStoreConfig } from "../types";
+import { ChromeWebStoreConfig, ConfigureCommandOptions } from "../types";
 
 export const configureCommand = new Command("configure")
   .description("Configure Chrome Web Store API credentials")
@@ -11,7 +11,7 @@ export const configureCommand = new Command("configure")
   .option("--client-secret <secret>", "Google OAuth2 client secret")
   .option("--refresh-token <token>", "OAuth2 refresh token")
   .option("--publisher-id <id>", "Chrome Web Store publisher ID")
-  .action(async (options) => {
+  .action(async (options: ConfigureCommandOptions) => {
     try {
       let config: ChromeWebStoreConfig;
 

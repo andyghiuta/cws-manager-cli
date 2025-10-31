@@ -1,9 +1,9 @@
 import { Command } from "commander";
 import chalk from "chalk";
-import ora from "ora";
 import { ConfigManager } from "../utils/config";
 import { ChromeWebStoreClient } from "../services/chrome-webstore-client";
 import { DeployPercentageOptions } from "../types";
+import { withSpinner } from "../utils/spinner";
 
 export const deployCommand = new Command("deploy")
   .description("Set the deployment percentage for a published item")
@@ -13,7 +13,7 @@ export const deployCommand = new Command("deploy")
     async (
       itemId: string,
       percentage: string,
-      _options: any,
+      _options: unknown,
       command: Command
     ) => {
       const globalOptions = command.parent?.opts() || {};
@@ -51,32 +51,29 @@ export const deployCommand = new Command("deploy")
         const config = await ConfigManager.loadConfig(opts.config);
         const client = new ChromeWebStoreClient(config);
 
-        const spinner = ora("Updating deployment percentage...").start();
+        await withSpinner(
+          "Updating deployment percentage...",
+          "Deployment percentage updated successfully",
+          "Deploy percentage update failed",
+          () =>
+            client.setPublishedDeployPercentage(itemId, {
+              deployPercentage: opts.percentage,
+            })
+        );
 
-        try {
-          await client.setPublishedDeployPercentage(itemId, {
-            deployPercentage: opts.percentage,
-          });
+        console.log(chalk.green("✅ Deploy percentage updated!"));
+        console.log(
+          chalk.gray(
+            `The published revision will now be deployed to ${opts.percentage}% of users.`
+          )
+        );
 
-          spinner.succeed("Deployment percentage updated successfully");
-
-          console.log(chalk.green("✅ Deploy percentage updated!"));
+        if (opts.verbose) {
           console.log(
             chalk.gray(
-              `The published revision will now be deployed to ${opts.percentage}% of users.`
+              "Note: Changes may take some time to propagate to all users."
             )
           );
-
-          if (opts.verbose) {
-            console.log(
-              chalk.gray(
-                "Note: Changes may take some time to propagate to all users."
-              )
-            );
-          }
-        } catch (error) {
-          spinner.fail("Deploy percentage update failed");
-          throw error;
         }
       } catch (error) {
         console.error(

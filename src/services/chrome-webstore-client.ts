@@ -9,6 +9,7 @@ import {
   SetPublishedDeployPercentageRequest,
   UploadState,
 } from "../types";
+import { wait } from "../utils/utils";
 
 interface TokenResponse {
   access_token: string;
@@ -29,6 +30,14 @@ export class ChromeWebStoreClient {
 
   constructor(config: ChromeWebStoreConfig) {
     this.config = config;
+  }
+
+  private getApiPath(itemId: string, action: string): string {
+    return `/v2/publishers/${this.config.publisherId}/items/${itemId}:${action}`;
+  }
+
+  private getUploadUrl(itemId: string): string {
+    return `${this.baseUrl}/upload/v2/publishers/${this.config.publisherId}/items/${itemId}:upload`;
   }
 
   private async getAccessToken(): Promise<string> {
@@ -87,7 +96,7 @@ export class ChromeWebStoreClient {
   private async makeRequest<T>(
     method: "GET" | "POST",
     apiPath: string,
-    body?: any
+    body?: unknown
   ): Promise<T> {
     const accessToken = await this.getAccessToken();
     const requestUrl = `${this.baseUrl}${apiPath}`;
@@ -133,7 +142,7 @@ export class ChromeWebStoreClient {
     ]);
 
     const accessToken = await this.getAccessToken();
-    const requestUrl = `${this.baseUrl}/upload/v2/publishers/${this.config.publisherId}/items/${itemId}:upload`;
+    const requestUrl = this.getUploadUrl(itemId);
 
     const headers = {
       Authorization: `Bearer ${accessToken}`,
@@ -153,17 +162,17 @@ export class ChromeWebStoreClient {
     itemId: string,
     request: PublishItemRequest
   ): Promise<PublishItemResponse> {
-    const path = `/v2/publishers/${this.config.publisherId}/items/${itemId}:publish`;
+    const path = this.getApiPath(itemId, "publish");
     return this.makeRequest<PublishItemResponse>("POST", path, request);
   }
 
   async fetchItemStatus(itemId: string): Promise<FetchItemStatusResponse> {
-    const path = `/v2/publishers/${this.config.publisherId}/items/${itemId}:fetchStatus`;
+    const path = this.getApiPath(itemId, "fetchStatus");
     return this.makeRequest<FetchItemStatusResponse>("GET", path);
   }
 
   async cancelSubmission(itemId: string): Promise<void> {
-    const path = `/v2/publishers/${this.config.publisherId}/items/${itemId}:cancelSubmission`;
+    const path = this.getApiPath(itemId, "cancelSubmission");
     await this.makeRequest<void>("POST", path, {});
   }
 
@@ -171,7 +180,7 @@ export class ChromeWebStoreClient {
     itemId: string,
     request: SetPublishedDeployPercentageRequest
   ): Promise<void> {
-    const path = `/v2/publishers/${this.config.publisherId}/items/${itemId}:setPublishedDeployPercentage`;
+    const path = this.getApiPath(itemId, "setPublishedDeployPercentage");
     await this.makeRequest<void>("POST", path, request);
   }
 
@@ -183,25 +192,15 @@ export class ChromeWebStoreClient {
 
     while (Date.now() - startTime < maxWaitTime) {
       const status = await this.fetchItemStatus(itemId);
-
-      if (status.lastAsyncUploadState) {
-        switch (status.lastAsyncUploadState) {
-          case UploadState.SUCCEEDED:
-            return UploadState.SUCCEEDED;
-          case UploadState.FAILED:
-            return UploadState.FAILED;
-          case UploadState.IN_PROGRESS:
-            // Continue waiting
-            break;
-          default:
-            return status.lastAsyncUploadState;
-        }
+      if (
+        !status.lastAsyncUploadState ||
+        status.lastAsyncUploadState === UploadState.IN_PROGRESS
+      ) {
+        // Wait before checking again
+        await wait(ChromeWebStoreClient.POLL_INTERVAL_MS);
+      } else {
+        return status.lastAsyncUploadState;
       }
-
-      // Wait before checking again
-      await new Promise<void>((resolve) =>
-        setTimeout(resolve, ChromeWebStoreClient.POLL_INTERVAL_MS)
-      );
     }
 
     throw new Error("Upload timeout: Maximum wait time exceeded");
