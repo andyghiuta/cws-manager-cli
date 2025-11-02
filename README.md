@@ -311,6 +311,7 @@ cws-manager -v upload abcdefghijklmnopqrstuvwxyz1234567890 extension.zip
 cws-manager --dry publish abcdefghijklmnopqrstuvwxyz1234567890
 ```
 
+
 ## CI/CD Integration
 
 This CLI is perfect for automating extension deployments in CI/CD pipelines:
@@ -328,38 +329,27 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '24'
           
-      - name: Install CLI
+      - name: Install CWS CLI
         run: npm install -g cws-manager-cli
         
-      - name: Create config
-        run: |
-          mkdir -p ~/.cws-manager-cli
-          echo '{}' | jq \\
-            --arg clientId "$CLIENT_ID" \\
-            --arg clientSecret "$CLIENT_SECRET" \\
-            --arg refreshToken "$REFRESH_TOKEN" \\
-            --arg publisherId "$PUBLISHER_ID" \\
-            '{clientId: $clientId, clientSecret: $clientSecret, refreshToken: $refreshToken, publisherId: $publisherId}' \\
-            > ~/.cws-manager-cli/config.json
+      - name: Upload & Publish Extension
         env:
-          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
-          PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
-          
-      - name: Upload and publish
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
         run: |
           cws-manager upload ${{ secrets.EXTENSION_ID }} extension.zip --auto-publish
 ```
 
-### Jenkins Example
+### Jenkins Example (Using config file)
 
 ```groovy  
 pipeline {
@@ -403,6 +393,39 @@ EOF
         }
     }
 }
+```
+
+### Docker Example
+
+```dockerfile
+FROM node:18-alpine
+RUN npm install -g cws-manager-cli
+
+ENV CWS_CLIENT_ID=""
+ENV CWS_CLIENT_SECRET=""
+ENV CWS_REFRESH_TOKEN=""
+ENV CWS_PUBLISHER_ID=""
+
+COPY extension.zip .
+CMD ["cws", "upload", "${EXTENSION_ID}", "extension.zip", "--auto-publish"]
+```
+
+### Shell Script Example
+
+```bash
+#!/bin/bash
+# deploy-extension.sh
+
+# Check if environment variables are set
+if [[ -z "$CWS_CLIENT_ID" || -z "$CWS_CLIENT_SECRET" || -z "$CWS_REFRESH_TOKEN" || -z "$CWS_PUBLISHER_ID" ]]; then
+  echo "Error: All CWS environment variables must be set"
+  exit 1
+fi
+
+# Upload and publish extension
+cws-manager upload "$EXTENSION_ID" extension.zip --auto-publish --deploy-percentage 25
+
+echo "Extension deployed with 25% rollout"
 ```
 
 ## API Reference
@@ -452,74 +475,6 @@ Use dry run mode to test commands without making actual API calls:
 cws-manager --dry upload your-extension-id extension.zip
 ```
 
-## CI/CD Integration
-
-The environment variables configuration makes CWS CLI perfect for automated deployments:
-
-### GitHub Actions Example
-
-```yaml
-name: Deploy Extension
-on:
-  push:
-    tags: ['v*']
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          
-      - name: Install CWS CLI
-        run: npm install -g cws-manager-cli
-        
-      - name: Upload & Publish Extension
-        env:
-          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
-          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
-          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
-          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
-        run: |
-          cws-manager upload ${{ secrets.EXTENSION_ID }} extension.zip --auto-publish
-```
-
-### Docker Example
-
-```dockerfile
-FROM node:18-alpine
-RUN npm install -g cws-manager-cli
-
-ENV CWS_CLIENT_ID=""
-ENV CWS_CLIENT_SECRET=""
-ENV CWS_REFRESH_TOKEN=""
-ENV CWS_PUBLISHER_ID=""
-
-COPY extension.zip .
-CMD ["cws", "upload", "${EXTENSION_ID}", "extension.zip", "--auto-publish"]
-```
-
-### Shell Script Example
-
-```bash
-#!/bin/bash
-# deploy-extension.sh
-
-# Check if environment variables are set
-if [[ -z "$CWS_CLIENT_ID" || -z "$CWS_CLIENT_SECRET" || -z "$CWS_REFRESH_TOKEN" || -z "$CWS_PUBLISHER_ID" ]]; then
-  echo "Error: All CWS environment variables must be set"
-  exit 1
-fi
-
-# Upload and publish extension
-cws-manager upload "$EXTENSION_ID" extension.zip --auto-publish --deploy-percentage 25
-
-echo "Extension deployed with 25% rollout"
-```
 
 ## Contributing
 
