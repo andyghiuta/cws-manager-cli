@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.0.1](https://github.com/andyghiuta/cws-manager-cli/compare/v1.0.0...v1.0.1) (2025-11-02)
+
 # [1.0.0](https://github.com/andyghiuta/cws-manager-cli/compare/v0.0.6...v1.0.0) (2025-11-02)
 
 ## [0.0.6](https://github.com/andyghiuta/cws-manager-cli/compare/v0.0.5...v0.0.6) (2025-11-02)
