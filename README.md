@@ -33,7 +33,7 @@ npx cws-manager --help
 ### From Source
 
 ```bash
-git clone https://github.com/your-username/cws-manager-cli.git
+git clone https://github.com/andyghiuta/cws-manager-cli.git
 cd cws-manager-cli
 npm install
 npm run build
@@ -534,7 +534,7 @@ echo "Extension deployed with 25% rollout"
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/cws-manager-cli.git
+git clone https://github.com/andyghiuta/cws-manager-cli.git
 cd cws-manager-cli
 
 # Install dependencies  
