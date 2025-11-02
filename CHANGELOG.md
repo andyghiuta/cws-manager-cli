@@ -1,5 +1,7 @@
 # Changelog
 
+# [1.0.0](https://github.com/andyghiuta/cws-manager-cli/compare/v0.0.6...v1.0.0) (2025-11-02)
+
 ## [0.0.6](https://github.com/andyghiuta/cws-manager-cli/compare/v0.0.5...v0.0.6) (2025-11-02)
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.

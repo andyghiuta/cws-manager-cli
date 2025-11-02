@@ -1,6 +1,6 @@
 {
   "name": "cws-manager-cli",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "CLI tool for managing Chrome extensions in the Chrome Web Store",
   "repository": {
     "url": "https://github.com/andyghiuta/cws-manager-cli",
