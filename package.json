@@ -6,6 +6,11 @@
     "url": "https://github.com/andyghiuta/cws-manager-cli",
     "type": "git"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "config.example.json"
+  ],
   "main": "dist/index.js",
   "bin": {
     "cws-manager": "dist/cli.js"
