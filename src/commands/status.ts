@@ -77,12 +77,12 @@ async function displayStatusResponse(
 // Helper function to display distribution channels
 function displayDistributionChannels(channels: DistributionChannel[]): void {
   channels.forEach((channel, index) => {
-    Logger.verbose(`  Channel ${index + 1}:`);
+    Logger.gray(`  Channel ${index + 1}:`);
     if (channel.crxVersion) {
-      Logger.verbose(`    Version: ${channel.crxVersion}`);
+      Logger.gray(`    Version: ${channel.crxVersion}`);
     }
     if (channel.deployPercentage !== undefined) {
-      Logger.verbose(`    Deploy %: ${channel.deployPercentage}%`);
+      Logger.gray(`    Deploy %: ${channel.deployPercentage}%`);
     }
   });
 }
