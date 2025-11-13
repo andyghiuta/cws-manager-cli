@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/andyghiuta/cws-manager-cli/compare/v1.0.1...v1.0.2) (2025-11-13)
+
+
+### Bug Fixes
+
+* always show version and % on status ([22782f3](https://github.com/andyghiuta/cws-manager-cli/commit/22782f3d4c840080802a36fa7bbe705b22ba1c35))
+
 ## [1.0.1](https://github.com/andyghiuta/cws-manager-cli/compare/v1.0.0...v1.0.1) (2025-11-02)
 
 # [1.0.0](https://github.com/andyghiuta/cws-manager-cli/compare/v0.0.6...v1.0.0) (2025-11-02)
