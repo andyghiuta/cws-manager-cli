@@ -1,5 +1,10 @@
 # Changelog
 
+## <small>1.0.3 (2026-03-28)</small>
+
+* chore: upgrade packages ([d89a593](https://github.com/andyghiuta/cws-manager-cli/commit/d89a593))
+* fix: resolve bugs and improve code quality across CLI ([28409dd](https://github.com/andyghiuta/cws-manager-cli/commit/28409dd))
+
 ## [1.0.2](https://github.com/andyghiuta/cws-manager-cli/compare/v1.0.1...v1.0.2) (2025-11-13)
 
 
