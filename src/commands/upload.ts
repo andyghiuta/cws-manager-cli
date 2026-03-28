@@ -9,7 +9,7 @@ import {
   UploadState,
   UploadCommandOptions,
 } from "../types";
-import { formatFileSize } from "../utils/utils";
+import { formatFileSize, validateDeployPercentage } from "../utils/utils";
 import { withSpinner, withSpinnerCustom } from "../utils/spinner";
 import { Logger } from "../utils/logger";
 
@@ -86,15 +86,7 @@ async function handleAutoPublish(
       ? PublishType.STAGED_PUBLISH
       : PublishType.DEFAULT_PUBLISH;
 
-  const deployPercentage = parseInt(opts.deployPercentage || "100", 10);
-
-  if (
-    isNaN(deployPercentage) ||
-    deployPercentage < 0 ||
-    deployPercentage > 100
-  ) {
-    throw new Error("Deploy percentage must be a number between 0 and 100");
-  }
+  const deployPercentage = validateDeployPercentage(opts.deployPercentage || "100");
 
   const publishResponse = await withSpinner(
     "Publishing item...",

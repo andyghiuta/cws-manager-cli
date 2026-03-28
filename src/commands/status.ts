@@ -14,9 +14,9 @@ import { withSpinnerCustom } from "../utils/spinner";
 import { Logger } from "../utils/logger";
 
 // Helper function to display status response
-async function displayStatusResponse(
+function displayStatusResponse(
   response: FetchItemStatusResponse
-): Promise<void> {
+): void {
   // Display status information
   Logger.blue("📋 Status Information:");
 
@@ -99,7 +99,7 @@ function createFetchStatusFunction(
         const response = await client.fetchItemStatus(itemId);
         spinner.stop();
 
-        await displayStatusResponse(response);
+        displayStatusResponse(response);
 
         if (opts.verbose) {
           Logger.verbose("\nRaw response:", JSON.stringify(response, null, 2));

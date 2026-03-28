@@ -108,7 +108,7 @@ export class ConfigManager {
     try {
       ConfigManager.validateConfig(config);
       const configData = JSON.stringify(config, null, 2);
-      writeFileSync(filePath, configData, "utf8");
+      writeFileSync(filePath, configData, { encoding: "utf8", mode: 0o600 });
     } catch (error) {
       throw new Error(`Failed to save config: ${error}`);
     }

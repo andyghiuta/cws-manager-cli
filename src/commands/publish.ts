@@ -4,21 +4,7 @@ import { ChromeWebStoreClient } from "../services/chrome-webstore-client";
 import { PublishOptions, PublishType, PublishCommandOptions } from "../types";
 import { withSpinner } from "../utils/spinner";
 import { Logger } from "../utils/logger";
-
-// Helper function to validate and parse deploy percentage
-function validateDeployPercentage(deployPercentageStr: string): number {
-  const deployPercentage = parseInt(deployPercentageStr, 10);
-
-  if (
-    isNaN(deployPercentage) ||
-    deployPercentage < 0 ||
-    deployPercentage > 100
-  ) {
-    throw new Error("Deploy percentage must be a number between 0 and 100");
-  }
-
-  return deployPercentage;
-}
+import { validateDeployPercentage } from "../utils/utils";
 
 // Helper function to get publish type
 function getPublishType(publishTypeStr?: string): PublishType {

@@ -15,8 +15,8 @@ export class Logger {
     console.log(chalk.green(message), ...args);
   }
 
-  static blue(message: string): void {
-    console.log(chalk.blue(message));
+  static blue(message: string, ...args: unknown[]): void {
+    console.log(chalk.blue(message), ...args);
   }
 
   static gray(message: string, ...args: unknown[]): void {

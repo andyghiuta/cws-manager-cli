@@ -4,21 +4,7 @@ import { ChromeWebStoreClient } from "../services/chrome-webstore-client";
 import { DeployPercentageOptions } from "../types";
 import { withSpinner } from "../utils/spinner";
 import { Logger } from "../utils/logger";
-
-// Helper function to validate deploy percentage
-function validatePercentage(percentage: string): number {
-  const deployPercentage = parseInt(percentage, 10);
-
-  if (
-    isNaN(deployPercentage) ||
-    deployPercentage < 0 ||
-    deployPercentage > 100
-  ) {
-    throw new Error("Deploy percentage must be a number between 0 and 100");
-  }
-
-  return deployPercentage;
-}
+import { validateDeployPercentage } from "../utils/utils";
 
 export const deployCommand = new Command("deploy")
   .description("Set the deployment percentage for a published item")
@@ -32,7 +18,7 @@ export const deployCommand = new Command("deploy")
       command: Command
     ) => {
       const globalOptions = command.parent?.opts() || {};
-      const deployPercentage = validatePercentage(percentage);
+      const deployPercentage = validateDeployPercentage(percentage);
 
       const opts: DeployPercentageOptions = {
         ...globalOptions,
@@ -41,6 +27,7 @@ export const deployCommand = new Command("deploy")
       };
 
       try {
+        Logger.setVerbose(opts.verbose || false);
         Logger.blue("🎯 Chrome Web Store Deploy Percentage");
         Logger.verbose(`Item ID: ${itemId}`);
         Logger.verbose(`Deploy Percentage: ${opts.percentage}%`);

@@ -18,15 +18,15 @@ function shouldUseInteractiveMode(options: ConfigureCommandOptions): boolean {
 // Helper function to show configuration instructions
 function showConfigurationInstructions(): void {
   Logger.blue("🔧 CWS CLI Configuration");
-  Logger.verbose("Please provide your Chrome Web Store API credentials.\n");
+  Logger.gray("Please provide your Chrome Web Store API credentials.\n");
 
   Logger.yellow("💡 How to get these credentials:");
-  Logger.verbose(
+  Logger.gray(
     "1. Go to the Google Cloud Console (https://console.cloud.google.com)"
   );
-  Logger.verbose("2. Enable the Chrome Web Store API");
-  Logger.verbose("3. Create OAuth2 credentials");
-  Logger.verbose(
+  Logger.gray("2. Enable the Chrome Web Store API");
+  Logger.gray("3. Create OAuth2 credentials");
+  Logger.gray(
     "4. Get your Publisher ID from the Chrome Web Store Developer Dashboard\n"
   );
 }
@@ -87,13 +87,17 @@ function getConfigFromOptions(
 
 export const configureCommand = new Command("configure")
   .description("Configure Chrome Web Store API credentials")
-  .option("-i, --interactive", "interactive configuration mode", true)
+  .option("-i, --interactive", "force interactive configuration mode")
   .option("--client-id <id>", "Google OAuth2 client ID")
   .option("--client-secret <secret>", "Google OAuth2 client secret")
   .option("--refresh-token <token>", "OAuth2 refresh token")
   .option("--publisher-id <id>", "Chrome Web Store publisher ID")
-  .action(async (options: ConfigureCommandOptions) => {
+  .action(async (options: ConfigureCommandOptions, command: Command) => {
+    const globalOptions = command.parent?.opts() || {};
+
     try {
+      Logger.setVerbose(globalOptions.verbose || false);
+
       let config: ChromeWebStoreConfig;
 
       if (shouldUseInteractiveMode(options)) {
@@ -103,11 +107,11 @@ export const configureCommand = new Command("configure")
         config = getConfigFromOptions(options);
       }
 
-      await ConfigManager.saveConfig(config, options.config);
+      await ConfigManager.saveConfig(config, globalOptions.config);
 
       Logger.green("✅ Configuration saved successfully!");
-      Logger.verbose(
-        `Config saved to: ${options.config || "~/.cws-manager-cli/config.json"}`
+      Logger.gray(
+        `Config saved to: ${globalOptions.config || "~/.cws-manager-cli/config.json"}`
       );
     } catch (error) {
       Logger.red(

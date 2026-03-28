@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from "fs";
 import { basename } from "path";
+import packageJson from "../../package.json";
 import {
   ChromeWebStoreConfig,
   UploadItemPackageResponse,
@@ -21,7 +22,7 @@ export class ChromeWebStoreClient {
   private static readonly BASE_URL = "https://chromewebstore.googleapis.com";
   private static readonly TOKEN_URL = "https://oauth2.googleapis.com/token";
   private static readonly POLL_INTERVAL_MS = 2000;
-  private static readonly USER_AGENT = "cws-manager-cli/1.0.0";
+  private static readonly USER_AGENT = `cws-manager-cli/${packageJson.version}`;
 
   private config: ChromeWebStoreConfig;
   private baseUrl = ChromeWebStoreClient.BASE_URL;
@@ -41,8 +42,8 @@ export class ChromeWebStoreClient {
   }
 
   private async getAccessToken(): Promise<string> {
-    // Check if we have a valid token
-    if (this.accessToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+    // Check if we have a valid token (refresh 30s early to avoid race conditions)
+    if (this.accessToken && this.tokenExpiry && Date.now() < this.tokenExpiry - 30_000) {
       return this.accessToken;
     }
 
